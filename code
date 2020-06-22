@@ -3,14 +3,14 @@
 import numpy as np
 import cv2
 #等待分析视频路径
-video_path = r"D:\学习课程资料\多媒体技术\大作业\desk.mp4"
+video_path = "desk.mp4"
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
            "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
            "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
            "sofa", "train", "tvmonitor"]
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
-prototxt = r'D:\学习课程资料\多媒体技术\大作业\demo.prototxt.txt'
-model = r'D:\学习课程资料\多媒体技术\大作业\demo.caffemodel'
+prototxt = 'demo.prototxt.txt'
+model = 'demo.caffemodel'
 video = video_path
 video_name = video_path.split('/')[-1]
 #分析结果视频路径
