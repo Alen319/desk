@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+import numpy as np
+import cv2
+#等待分析视频路径
+video_path = r"D:\学习课程资料\多媒体技术\大作业\desk.mp4"
+CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
+           "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
+           "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
+           "sofa", "train", "tvmonitor"]
+COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
+prototxt = r'D:\学习课程资料\多媒体技术\大作业\demo.prototxt.txt'
+model = r'D:\学习课程资料\多媒体技术\大作业\demo.caffemodel'
+video = video_path
+video_name = video_path.split('/')[-1]
+#分析结果视频路径
+result_video = 'result/%s' %(video_name)
+#筛选，物品识别概率大于0.2的会话框，可以手动改这个数值
+confidence_input = 0.2
+net = cv2.dnn.readNetFromCaffe(prototxt, model)
+#读取视频
+cap = cv2.VideoCapture(video)
+#获取视频fps
+fps_video = cap.get(cv2.CAP_PROP_FPS)
+#设置视频编码器
+fourcc = cv2.VideoWriter_fourcc(*"DIVX")
+#设置视频写入参数
+videoWriter = cv2.VideoWriter(result_video, fourcc, fps_video, (1920, 1080))
+while (cap.isOpened()):
+    ret, frame = cap.read()
+    if ret == True:
+        image = frame
+        (h, w) = image.shape[:2]
+        blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 0.007843, (300, 300), 127.5)
+        net.setInput(blob)
+        detections = net.forward()
+        for i in np.arange(0, detections.shape[2]):
+            confidence = detections[0, 0, i, 2]
+            if confidence > confidence_input:
+                idx = int(detections[0, 0, i, 1])
+                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                (startX, startY, endX, endY) = box.astype("int")
+                label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
+                cv2.rectangle(image, (startX, startY), (endX, endY),COLORS[idx], 2)
+                y = startY - 15 if startY - 15 > 15 else startY + 15
+                cv2.putText(image, label, (startX, y),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
+        videoWriter.write(image)
+    else:
+        break
+videoWriter.release()
